@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Barbería Zapata y sus Bigotes</title>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+    <header class="main-header">
+        <div class="logo">
+            <img src="Imagenes/logo.png" alt="Logo" onerror="this.style.display='none'">
+            <span>Zapata y sus Bigotes</span>
+        </div>
+        <nav class="main-nav">
+            <ul><li><a href="#booking-form">Agendar</a></li></ul>
+        </nav>
+    </header>
+
+    <div class="container">
+        <h1>💈 Agenda tu Cita</h1>
+
+        <div class="step-indicator" id="step-indicator">
+            <span class="active">1. Servicio</span>
+            <span>2. Barbero</span>
+            <span>3. Fecha</span>
+        </div>
+
+        <form id="booking-form">
+            
+            <section class="step active" data-step="1">
+                <h2>Elige el Servicio</h2>
+                <div id="services-container" class="selection-grid"></div>
+                <div class="summary-text" id="service-summary">Selecciona una opción arriba</div>
+                <div class="buttons-row">
+                    <button type="button" class="next-btn" disabled>Siguiente &rarr;</button>
+                </div>
+            </section>
+
+            <section class="step" data-step="2">
+                <h2>Elige a tu Barbero</h2>
+                <div id="barber-container" class="selection-grid"></div>
+                <div class="buttons-row">
+                    <button type="button" class="prev-btn">&larr; Anterior</button>
+                    <button type="button" class="next-btn" disabled>Siguiente &rarr;</button>
+                </div>
+            </section>
+
+            <section class="step" data-step="3">
+                
+                <h2>1. Selecciona la Fecha</h2>
+                <div class="calendar-wrapper">
+                    <div class="calendar-header">
+                        <button type="button" id="prev-month">&lt;</button>
+                        <span id="month-year"></span>
+                        <button type="button" id="next-month">&gt;</button>
+                    </div>
+                    <div class="calendar-days-header">
+                        <span>Dom</span><span>Lun</span><span>Mar</span><span>Mié</span><span>Jue</span><span>Vie</span><span>Sáb</span>
+                    </div>
+                    <div id="calendar-grid" class="calendar-grid">
+                        </div>
+                </div>
+
+                <div class="time-section">
+                    <h3>2. Horarios Disponibles</h3>
+                    <div id="hours-container" class="hours-grid">
+                        <p class="info-text">👈 Toca un día en el calendario</p>
+                    </div>
+                </div>
+
+                <div class="client-info-box">
+                    <h3>3. Tus Datos</h3>
+                    <input type="text" id="client-name" placeholder="Tu Nombre Completo" required>
+                    <input type="tel" id="client-phone" placeholder="Tu Teléfono (para WhatsApp)" required>
+                </div>
+
+                <div id="final-summary" class="summary-box"></div>
+
+                <div class="buttons-row">
+                    <button type="button" class="prev-btn">&larr; Anterior</button>
+                    <button type="submit" id="confirm-btn" disabled>Confirmar Cita ✅</button>
+                </div>
+            </section>
+
+        </form>
+
+        <section id="contact" class="footer-info">
+            <p>📍 Calle Revolución #104, Barranca de Otates</p>
+            <p> 📍Abajo de donde era antes el Billar Rubio</p>
+            <p>📞 3341013535</p>
+        </section>
+    </div>
+
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-firestore.js"></script>
+    <script src="script.js"></script>
+</body>
+</html>
