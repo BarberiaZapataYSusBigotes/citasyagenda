@@ -67,7 +67,7 @@
                 <div class="time-section">
                     <h3>2. Horarios Disponibles</h3>
                     <div id="hours-container" class="hours-grid">
-                        <p class="info-text">👈 Toca un día en el calendario</p>
+                        <p class="info-text">👈 Toca un día en el calendario (Lunes a Viernes)</p>
                     </div>
                 </div>
 
@@ -79,7 +79,19 @@
 
                 <div id="final-summary" class="summary-box"></div>
 
-                <div class="buttons-row">
+                <div class="gestion-container" style="margin-top: 30px; padding-top: 20px; border-top: 1px solid #444; text-align: center;">
+                    <p style="font-size: 0.9em; color: #aaa; margin-bottom: 10px;">¿Necesitas cambios en una cita ya hecha?</p>
+                    <div style="display: flex; gap: 10px; justify-content: center;">
+                        <button type="button" onclick="gestionarCita('cancelar')" style="background-color: #d9534f; color: white; border: none; padding: 8px 12px; border-radius: 5px; cursor: pointer;">
+                            🚫 Cancelar
+                        </button>
+                        <button type="button" onclick="gestionarCita('reagendar')" style="background-color: #f0ad4e; color: white; border: none; padding: 8px 12px; border-radius: 5px; cursor: pointer;">
+                            🔄 Reagendar
+                        </button>
+                    </div>
+                </div>
+
+                <div class="buttons-row" style="margin-top: 20px;">
                     <button type="button" class="prev-btn">&larr; Anterior</button>
                     <button type="submit" id="confirm-btn" disabled>Confirmar Cita ✅</button>
                 </div>
@@ -88,8 +100,7 @@
         </form>
 
         <section id="contact" class="footer-info">
-            <p>📍 Calle Revolución #104, Barranca de Otates</p>
-            <p> 📍Abajo de donde era antes el Billar Rubio</p>
+            <p>📍 Calle Revolución #104, Barranca de Otates, justo abajo de donde era billar rubio</p>
             <p>📞 3341013535</p>
         </section>
     </div>

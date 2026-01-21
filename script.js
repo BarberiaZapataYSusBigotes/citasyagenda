@@ -1,4 +1,4 @@
-/* script.js - VERSIÓN CORREGIDA */
+/* script.js - VERSIÓN FINAL CORREGIDA (Sábados/Domingos bloqueados + Gestión) */
 
 // 1. CONFIGURACIÓN FIREBASE
 const firebaseConfig = {
@@ -25,6 +25,7 @@ const servicios = [
 // Solo Gabriel
 const barberos = [ { id: 'gabriel', nombre: "Gabriel", telefono: "3341013535" } ];
 
+// Horarios (Aunque bloqueemos fines de semana en calendario, dejamos la config por si acaso)
 const horarioTrabajo = {
     semana: { inicio: 16 * 60, fin: 22 * 60 },
     sabado: { inicio: 16 * 60, fin: 19 * 60 },
@@ -66,7 +67,6 @@ function renderCalendar(month, year) {
     const monthLabel = document.getElementById('month-year');
     const monthNames = ["Enero", "Febrero", "Marzo", "Abril", "Mayo", "Junio", "Julio", "Agosto", "Septiembre", "Octubre", "Noviembre", "Diciembre"];
     
-    // CORRECCIÓN: Uso de backticks
     monthLabel.innerText = `${monthNames[month]} ${year}`;
     grid.innerHTML = "";
 
@@ -88,14 +88,26 @@ function renderCalendar(month, year) {
         btn.type = 'button';
         const btnDate = new Date(year, month, day);
 
+        // Bloquear días pasados
         if (btnDate < today) btn.disabled = true;
 
-        // CORRECCIÓN: Uso de backticks
+        // --- NUEVO: BLOQUEAR SÁBADOS (6) Y DOMINGOS (0) ---
+        if (btnDate.getDay() === 0 || btnDate.getDay() === 6) {
+            btn.disabled = true;
+            btn.style.opacity = "0.3"; 
+            btn.style.cursor = "not-allowed";
+            btn.title = "No laboramos fines de semana";
+        }
+        // --------------------------------------------------
+
         const dateStr = `${year}-${(month + 1).toString().padStart(2, '0')}-${day.toString().padStart(2, '0')}`;
         
         if (cita.fecha === dateStr) btn.classList.add('selected');
 
-        btn.onclick = () => seleccionarFecha(dateStr, btn);
+        // Solo permitir clic si no está deshabilitado
+        if (!btn.disabled) {
+            btn.onclick = () => seleccionarFecha(dateStr, btn);
+        }
         grid.appendChild(btn);
     }
 }
@@ -122,7 +134,6 @@ function cambiarPaso(dir) {
         cita.paso = nuevo;
         document.querySelectorAll('.step').forEach(s => s.classList.remove('active'));
         
-        // CORRECCIÓN: Comillas y backticks
         document.querySelector(`.step[data-step="${cita.paso}"]`).classList.add('active');
         
         document.querySelectorAll('.step-indicator span').forEach((span, idx) => {
@@ -154,13 +165,11 @@ function cargarServicios() {
     servicios.forEach(s => {
         const d = document.createElement('div');
         d.className = 'selection-item';
-        // CORRECCIÓN: Backticks
         d.innerHTML = `<h4>${s.nombre}</h4><p>$${s.precio}</p>`;
         d.onclick = () => {
             cita.servicio = s;
             document.querySelectorAll('#services-container .selection-item').forEach(x => x.classList.remove('selected'));
             d.classList.add('selected');
-            // CORRECCIÓN: Backticks
             document.getElementById('service-summary').innerText = `Seleccionado: ${s.nombre}`;
             validarBotones();
         };
@@ -174,7 +183,6 @@ function cargarBarberos() {
     barberos.forEach(b => {
         const d = document.createElement('div');
         d.className = 'selection-item';
-        // CORRECCIÓN: Backticks
         d.innerHTML = `<h4>${b.nombre}</h4><p>Barbero Principal</p>`;
         d.onclick = () => {
             cita.barbero = b;
@@ -190,7 +198,6 @@ function cargarBarberos() {
 function minutesAHora(m) {
     const hh = Math.floor(m / 60).toString().padStart(2, '0');
     const mm = (m % 60).toString().padStart(2, '0');
-    // CORRECCIÓN: Backticks
     return `${hh}:${mm}`;
 }
 
@@ -210,6 +217,7 @@ async function renderHorarios() {
     else if (dia === 6) rango = horarioTrabajo.sabado;
     else if (dia === 0) rango = horarioTrabajo.domingo;
 
+    // Aunque ya bloqueamos en calendario, doble seguridad aquí:
     if (!rango) { c.innerHTML = '<p>Cerrado.</p>'; return; }
 
     const snap = await db.collection('citas')
@@ -251,7 +259,6 @@ function seleccionarHora(h) {
     document.querySelectorAll('.hour-card').forEach(b => b.classList.remove('selected'));
     Array.from(document.querySelectorAll('.hour-card')).find(b => b.innerText === h)?.classList.add('selected');
     
-    // CORRECCIÓN: Backticks en HTML multilínea
     document.getElementById('final-summary').innerHTML = `
         <p><strong>Cita:</strong> ${cita.servicio.nombre}</p>
         <p><strong>Fecha:</strong> ${cita.fecha} - ${cita.horaInicio}</p>
@@ -269,7 +276,6 @@ function generarLinkCalendario(c) {
     const finMins = inicioMins + c.servicio.duracion;
     const horaFinFormat = minutesAHora(finMins).replace(/:/g, '');
     
-    // CORRECCIÓN: Backticks
     const start = `${fechaSinGuiones}T${horaSinPuntos}00`;
     const end = `${fechaSinGuiones}T${horaFinFormat}00`;
     
@@ -277,7 +283,6 @@ function generarLinkCalendario(c) {
     const detalles = encodeURIComponent(`Cliente: ${c.cliente}\nTel: ${c.telefono}\nServicio: ${c.servicio.nombre}`);
     const location = encodeURIComponent("Zapata y sus Bigotes");
 
-    // CORRECCIÓN: Backticks
     return `https://www.google.com/calendar/render?action=TEMPLATE&text=${titulo}&dates=${start}/${end}&details=${detalles}&location=${location}`;
 }
 
@@ -309,7 +314,6 @@ async function confirmarCita(e) {
         
         const linkCal = generarLinkCalendario({...cita, cliente: nombre, telefono: tel});
         
-        // CORRECCIÓN: Backticks
         const textoWA = `Hola, soy ${nombre}. Reservé ${cita.servicio.nombre} el ${cita.fecha} a las ${cita.horaInicio}.\n\n📅 *Agrégalo a tu calendario aquí (te avisa 15 min antes):* \n${linkCal}`;
         
         const linkWA = `https://wa.me/52${cita.barbero.telefono}?text=${encodeURIComponent(textoWA)}`;
@@ -323,4 +327,19 @@ async function confirmarCita(e) {
         btn.disabled = false;
         btn.innerText = "Reintentar";
     }
+}
+
+// 9. GESTIÓN DE CITAS (WhatsApp Directo)
+function gestionarCita(accion) {
+    const telefono = "523341013535"; // El número de Gabriel
+    let mensaje = "";
+
+    if (accion === 'cancelar') {
+        mensaje = "Hola Zapata y sus Bigotes, tengo una cita agendada pero necesito CANCELARLA. ¿Me apoyas?";
+    } else if (accion === 'reagendar') {
+        mensaje = "Hola, tengo una cita agendada pero necesito CAMBIAR LA FECHA (Reagendar). ¿Qué horarios tienes disponibles?";
+    }
+
+    const link = `https://wa.me/${telefono}?text=${encodeURIComponent(mensaje)}`;
+    window.open(link, '_blank');
 }
