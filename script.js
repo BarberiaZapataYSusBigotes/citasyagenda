@@ -1,4 +1,4 @@
-/* script.js - VERSIÓN FINAL CORREGIDA (Sábados/Domingos bloqueados + Gestión) */
+//* script.js - VERSIÓN FINAL COMPLETA */
 
 // 1. CONFIGURACIÓN FIREBASE
 const firebaseConfig = {
@@ -25,7 +25,7 @@ const servicios = [
 // Solo Gabriel
 const barberos = [ { id: 'gabriel', nombre: "Gabriel", telefono: "3341013535" } ];
 
-// Horarios (Aunque bloqueemos fines de semana en calendario, dejamos la config por si acaso)
+// Horarios base
 const horarioTrabajo = {
     semana: { inicio: 16 * 60, fin: 22 * 60 },
     sabado: { inicio: 16 * 60, fin: 19 * 60 },
@@ -91,20 +91,20 @@ function renderCalendar(month, year) {
         // Bloquear días pasados
         if (btnDate < today) btn.disabled = true;
 
-        // --- NUEVO: BLOQUEAR SÁBADOS (6) Y DOMINGOS (0) ---
+        // --- BLOQUEO DE FINES DE SEMANA ---
+        // 0 es Domingo, 6 es Sábado
         if (btnDate.getDay() === 0 || btnDate.getDay() === 6) {
             btn.disabled = true;
             btn.style.opacity = "0.3"; 
             btn.style.cursor = "not-allowed";
             btn.title = "No laboramos fines de semana";
         }
-        // --------------------------------------------------
+        // ----------------------------------
 
         const dateStr = `${year}-${(month + 1).toString().padStart(2, '0')}-${day.toString().padStart(2, '0')}`;
         
         if (cita.fecha === dateStr) btn.classList.add('selected');
 
-        // Solo permitir clic si no está deshabilitado
         if (!btn.disabled) {
             btn.onclick = () => seleccionarFecha(dateStr, btn);
         }
@@ -133,9 +133,7 @@ function cambiarPaso(dir) {
     if (nuevo >= 1 && nuevo <= 3) {
         cita.paso = nuevo;
         document.querySelectorAll('.step').forEach(s => s.classList.remove('active'));
-        
         document.querySelector(`.step[data-step="${cita.paso}"]`).classList.add('active');
-        
         document.querySelectorAll('.step-indicator span').forEach((span, idx) => {
             if (idx + 1 === cita.paso) span.classList.add('active');
             else span.classList.remove('active');
@@ -183,7 +181,11 @@ function cargarBarberos() {
     barberos.forEach(b => {
         const d = document.createElement('div');
         d.className = 'selection-item';
-        d.innerHTML = `<h4>${b.nombre}</h4><p>Barbero Principal</p>`;
+        
+        // --- CAMBIO AQUÍ: SOLO DICE "Barbero" ---
+        d.innerHTML = `<h4>${b.nombre}</h4><p>Barbero</p>`; 
+        // ----------------------------------------
+        
         d.onclick = () => {
             cita.barbero = b;
             document.querySelectorAll('#barber-container .selection-item').forEach(x => x.classList.remove('selected'));
@@ -217,7 +219,6 @@ async function renderHorarios() {
     else if (dia === 6) rango = horarioTrabajo.sabado;
     else if (dia === 0) rango = horarioTrabajo.domingo;
 
-    // Aunque ya bloqueamos en calendario, doble seguridad aquí:
     if (!rango) { c.innerHTML = '<p>Cerrado.</p>'; return; }
 
     const snap = await db.collection('citas')
@@ -267,11 +268,10 @@ function seleccionarHora(h) {
     validarPaso3();
 }
 
-// 7. FUNCIONES EXTRA: GENERAR LINK DE CALENDARIO
+// 7. GENERAR LINK CALENDARIO
 function generarLinkCalendario(c) {
     const fechaSinGuiones = c.fecha.replace(/-/g, '');
     const horaSinPuntos = c.horaInicio.replace(/:/g, '');
-    
     const inicioMins = horaAMinutos(c.horaInicio);
     const finMins = inicioMins + c.servicio.duracion;
     const horaFinFormat = minutesAHora(finMins).replace(/:/g, '');
@@ -286,7 +286,7 @@ function generarLinkCalendario(c) {
     return `https://www.google.com/calendar/render?action=TEMPLATE&text=${titulo}&dates=${start}/${end}&details=${detalles}&location=${location}`;
 }
 
-// 8. CONFIRMAR
+// 8. CONFIRMAR Y GUARDAR
 async function confirmarCita(e) {
     e.preventDefault();
     const btn = document.getElementById('confirm-btn');
@@ -311,11 +311,8 @@ async function confirmarCita(e) {
 
     try {
         await db.collection('citas').add(nuevaCita);
-        
         const linkCal = generarLinkCalendario({...cita, cliente: nombre, telefono: tel});
-        
         const textoWA = `Hola, soy ${nombre}. Reservé ${cita.servicio.nombre} el ${cita.fecha} a las ${cita.horaInicio}.\n\n📅 *Agrégalo a tu calendario aquí (te avisa 15 min antes):* \n${linkCal}`;
-        
         const linkWA = `https://wa.me/52${cita.barbero.telefono}?text=${encodeURIComponent(textoWA)}`;
         
         window.open(linkWA, '_blank');
@@ -329,9 +326,9 @@ async function confirmarCita(e) {
     }
 }
 
-// 9. GESTIÓN DE CITAS (WhatsApp Directo)
+// 9. GESTIÓN DE CITAS (Cancelar/Reagendar)
 function gestionarCita(accion) {
-    const telefono = "523341013535"; // El número de Gabriel
+    const telefono = "523341013535"; 
     let mensaje = "";
 
     if (accion === 'cancelar') {
